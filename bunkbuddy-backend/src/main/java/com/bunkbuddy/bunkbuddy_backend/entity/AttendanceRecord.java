@@ -18,6 +18,11 @@ public class AttendanceRecord {
     @JsonIgnore
     private Subject subject;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "schedule_id")
+    @JsonIgnore
+    private Schedule schedule;
+
     @Column(nullable = false)
     private LocalDate date;
 

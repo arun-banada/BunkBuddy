@@ -32,11 +32,16 @@ const Dashboard = () => {
 
   const handleMarkAttendance = async (scheduleId, subjectId, status) => {
     try {
-      await api.post('/attendance/mark', { subjectId, status });
+      await api.post('/attendance/mark', { scheduleId, subjectId, status });
       setMarkedClasses(prev => ({ ...prev, [scheduleId]: status }));
       fetchData(); // Refresh stats after marking
     } catch (error) {
       console.error("Error marking attendance", error);
+      if (error.response && error.response.status === 400) {
+        alert(error.response.data);
+      } else {
+        alert("Failed to mark attendance.");
+      }
     }
   };
 
