@@ -37,14 +37,7 @@ const Subjects = () => {
     }
   };
 
-  const markAttendance = async (subjectId, status) => {
-    try {
-      await api.post('/attendance/mark', { subjectId, status });
-      fetchSubjects();
-    } catch (err) {
-      setError('Error marking attendance');
-    }
-  };
+  // markAttendance function removed as it is now exclusively handled by Dashboard
 
   if (loading) return <div className="p-8 text-center text-white">Loading Subjects...</div>;
 
@@ -99,20 +92,8 @@ const Subjects = () => {
                  <p className="text-sm text-gray-300">{subject.recommendation}</p>
              </div>
 
-             <div className="grid grid-cols-2 gap-3 mt-auto">
-                 <button 
-                    onClick={() => markAttendance(subject.subjectId, 'PRESENT')}
-                    className="flex items-center justify-center gap-2 bg-green-600/20 hover:bg-green-600/40 text-green-400 border border-green-600/50 rounded-md py-2 transition-colors"
-                 >
-                     <Check size={18} /> Present
-                 </button>
-                 <button 
-                    onClick={() => markAttendance(subject.subjectId, 'ABSENT')}
-                    className="flex items-center justify-center gap-2 bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-600/50 rounded-md py-2 transition-colors"
-                 >
-                     <X size={18} /> Absent
-                 </button>
-             </div>
+             {/* Attendance marking buttons have been removed from here. 
+                 Users should only mark attendance for today's scheduled classes on the Dashboard. */}
           </GlassCard>
         ))}
       </div>
