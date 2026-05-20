@@ -35,13 +35,13 @@ public class AttendanceController {
             Long scheduleId = null;
             if (request.containsKey("scheduleId") && request.get("scheduleId") != null) {
                 scheduleId = Long.parseLong(request.get("scheduleId").toString());
+            } else {
+                return ResponseEntity.badRequest().body("Schedule ID is required to mark attendance.");
             }
 
-            if (scheduleId != null) {
-                boolean alreadyMarked = attendanceRecordRepository.existsByScheduleIdAndDate(scheduleId, LocalDate.now());
-                if (alreadyMarked) {
-                    return ResponseEntity.badRequest().body("Attendance already marked for this class today.");
-                }
+            boolean alreadyMarked = attendanceRecordRepository.existsByScheduleIdAndDate(scheduleId, LocalDate.now());
+            if (alreadyMarked) {
+                return ResponseEntity.badRequest().body("Attendance already marked for this class today.");
             }
 
             Subject subject = subjectRepository.findById(subjectId)

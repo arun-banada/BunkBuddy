@@ -18,7 +18,16 @@ const Dashboard = () => {
          api.get('/timetable/today').catch(() => ({ data: [] }))
       ]);
       setStats(resStats.data);
-      setTodayClasses(resClasses.data || []);
+      const classesData = resClasses.data || [];
+      setTodayClasses(classesData);
+      
+      const initialMarked = {};
+      classesData.forEach(cls => {
+        if (cls.markedStatus) {
+          initialMarked[cls.id] = cls.markedStatus;
+        }
+      });
+      setMarkedClasses(initialMarked);
     } catch (err) {
       console.error(err);
     } finally {

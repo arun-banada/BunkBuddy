@@ -1,5 +1,6 @@
 package com.bunkbuddy.bunkbuddy_backend.controller;
 
+import com.bunkbuddy.bunkbuddy_backend.entity.AttendanceRecord;
 import com.bunkbuddy.bunkbuddy_backend.entity.Schedule;
 import com.bunkbuddy.bunkbuddy_backend.entity.Subject;
 import com.bunkbuddy.bunkbuddy_backend.entity.User;
@@ -35,11 +36,13 @@ public class TimetableController {
     private final SubjectRepository subjectRepository;
     private final UserRepository userRepository;
     private final ScheduleRepository scheduleRepository;
+    private final com.bunkbuddy.bunkbuddy_backend.repository.AttendanceRecordRepository attendanceRecordRepository;
 
-    public TimetableController(SubjectRepository subjectRepository, UserRepository userRepository, ScheduleRepository scheduleRepository) {
+    public TimetableController(SubjectRepository subjectRepository, UserRepository userRepository, ScheduleRepository scheduleRepository, com.bunkbuddy.bunkbuddy_backend.repository.AttendanceRecordRepository attendanceRecordRepository) {
         this.subjectRepository = subjectRepository;
         this.userRepository = userRepository;
         this.scheduleRepository = scheduleRepository;
+        this.attendanceRecordRepository = attendanceRecordRepository;
     }
 
     private User getCurrentUser() {
@@ -154,7 +157,25 @@ public class TimetableController {
             User user = getCurrentUser();
             String today = LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH).toUpperCase();
             List<Schedule> todaySchedules = scheduleRepository.findByUserIdAndDayOfWeek(user.getId(), today);
-            return ResponseEntity.ok(todaySchedules);
+            
+            List<Map<String, Object>> result = new ArrayList<>();
+            for (Schedule schedule : todaySchedules) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("id", schedule.getId());
+                map.put("startTime", schedule.getStartTime());
+                map.put("endTime", schedule.getEndTime());
+                map.put("subject", schedule.getSubject());
+                
+                AttendanceRecord record = attendanceRecordRepository.findByScheduleIdAndDate(schedule.getId(), LocalDate.now());
+                if (record != null) {
+                    map.put("markedStatus", record.getStatus());
+                } else {
+                    map.put("markedStatus", null);
+                }
+                result.add(map);
+            }
+            
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error fetching today's schedule: " + e.getMessage());
         }
