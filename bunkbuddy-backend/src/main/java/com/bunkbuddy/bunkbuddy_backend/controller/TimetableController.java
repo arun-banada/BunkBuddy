@@ -152,11 +152,18 @@ public class TimetableController {
     }
 
     @GetMapping("/today")
-    public ResponseEntity<?> getTodaysSchedule() {
+    public ResponseEntity<?> getTodaysSchedule(@RequestParam(required = false) String date) {
         try {
             User user = getCurrentUser();
-            String today = LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH).toUpperCase();
-            List<Schedule> todaySchedules = scheduleRepository.findByUserIdAndDayOfWeek(user.getId(), today);
+            LocalDate targetDate;
+            if (date != null && !date.trim().isEmpty()) {
+                targetDate = LocalDate.parse(date);
+            } else {
+                targetDate = LocalDate.now();
+            }
+
+            String dayOfWeek = targetDate.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH).toUpperCase();
+            List<Schedule> todaySchedules = scheduleRepository.findByUserIdAndDayOfWeek(user.getId(), dayOfWeek);
             
             List<Map<String, Object>> result = new ArrayList<>();
             for (Schedule schedule : todaySchedules) {
@@ -166,7 +173,7 @@ public class TimetableController {
                 map.put("endTime", schedule.getEndTime());
                 map.put("subject", schedule.getSubject());
                 
-                AttendanceRecord record = attendanceRecordRepository.findByScheduleIdAndDate(schedule.getId(), LocalDate.now());
+                AttendanceRecord record = attendanceRecordRepository.findByScheduleIdAndDate(schedule.getId(), targetDate);
                 if (record != null) {
                     map.put("markedStatus", record.getStatus());
                 } else {

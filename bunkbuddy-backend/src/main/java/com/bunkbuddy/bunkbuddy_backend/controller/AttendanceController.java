@@ -39,7 +39,14 @@ public class AttendanceController {
                 return ResponseEntity.badRequest().body("Schedule ID is required to mark attendance.");
             }
 
-            boolean alreadyMarked = attendanceRecordRepository.existsByScheduleIdAndDate(scheduleId, LocalDate.now());
+            LocalDate targetDate;
+            if (request.containsKey("date") && request.get("date") != null && !request.get("date").toString().trim().isEmpty()) {
+                targetDate = LocalDate.parse(request.get("date").toString());
+            } else {
+                targetDate = LocalDate.now();
+            }
+
+            boolean alreadyMarked = attendanceRecordRepository.existsByScheduleIdAndDate(scheduleId, targetDate);
             if (alreadyMarked) {
                 return ResponseEntity.badRequest().body("Attendance already marked for this class today.");
             }
@@ -49,7 +56,7 @@ public class AttendanceController {
 
             AttendanceRecord record = new AttendanceRecord();
             record.setSubject(subject);
-            record.setDate(LocalDate.now());
+            record.setDate(targetDate);
             record.setStatus(status);
             
             if (scheduleId != null) {

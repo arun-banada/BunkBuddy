@@ -11,11 +11,17 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [markedClasses, setMarkedClasses] = useState({});
 
+  const getLocalDate = () => {
+    const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+    return (new Date(Date.now() - tzoffset)).toISOString().split('T')[0];
+  };
+
   const fetchData = async () => {
     try {
+      const localDate = getLocalDate();
       const [resStats, resClasses] = await Promise.all([
          api.get('/dashboard'),
-         api.get('/timetable/today').catch(() => ({ data: [] }))
+         api.get(`/timetable/today?date=${localDate}`).catch(() => ({ data: [] }))
       ]);
       setStats(resStats.data);
       const classesData = resClasses.data || [];
@@ -41,7 +47,8 @@ const Dashboard = () => {
 
   const handleMarkAttendance = async (scheduleId, subjectId, status) => {
     try {
-      await api.post('/attendance/mark', { scheduleId, subjectId, status });
+      const localDate = getLocalDate();
+      await api.post('/attendance/mark', { scheduleId, subjectId, status, date: localDate });
       setMarkedClasses(prev => ({ ...prev, [scheduleId]: status }));
       fetchData(); // Refresh stats after marking
     } catch (error) {
